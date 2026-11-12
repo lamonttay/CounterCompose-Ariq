@@ -1,36 +1,38 @@
 package com.example.countercompose
 
-import android.app.Application
-import android.content.Context
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.core.content.edit
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
-class CounterViewModel(
-    application: Application
-) : AndroidViewModel(application) {
+class CounterViewModel : ViewModel() {
 
-    private val prefs = application.getSharedPreferences(
-        PREFS_NAME, Context.MODE_PRIVATE
-    )
+    private val _count = MutableStateFlow(0)
+    val count: StateFlow<Int> = _count.asStateFlow()
 
-    private val _counter = mutableIntStateOf(
-        prefs.getInt(KEY_COUNTER, 0)
-    )
-    val counter: State<Int> = _counter
+    private val _nameInput = MutableStateFlow("")
+    val nameInput: StateFlow<String> = _nameInput.asStateFlow()
 
-    fun increment() = updateCounter(_counter.intValue + 1)
-    fun decrement() = updateCounter(_counter.intValue - 1)
-    fun reset() = updateCounter(0)
+    private val _savedName = MutableStateFlow("")
+    val savedName: StateFlow<String> = _savedName.asStateFlow()
 
-    private fun updateCounter(newValue: Int) {
-        _counter.intValue = newValue
-        prefs.edit { putInt(KEY_COUNTER, newValue) }
+    fun increment() {
+        _count.value++
     }
 
-    companion object {
-        private const val PREFS_NAME = "counter_prefs"
-        private const val KEY_COUNTER = "counter_value"
+    fun decrement() {
+        _count.value--
+    }
+
+    fun reset() {
+        _count.value = 0
+    }
+
+    fun onNameChange(newName: String) {
+        _nameInput.value = newName
+    }
+
+    fun saveName() {
+        _savedName.value = _nameInput.value.trim()
     }
 }
